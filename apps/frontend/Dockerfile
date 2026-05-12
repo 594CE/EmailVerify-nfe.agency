@@ -5,10 +5,8 @@ COPY package.json pnpm-workspace.yaml turbo.json ./
 COPY packages/ ./packages/
 COPY apps/frontend/ ./apps/frontend/
 RUN pnpm install
-
-ARG VITE_API_URL
+ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
-
 RUN pnpm --filter "@nfe/shared" build
 RUN pnpm --filter "@nfe/frontend" build
 
