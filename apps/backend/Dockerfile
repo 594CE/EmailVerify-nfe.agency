@@ -6,14 +6,14 @@ RUN npm install -g pnpm@10.30.3
 WORKDIR /app
 
 # Copy root package.json and workspace definition
-COPY package.json pnpm-workspace.yaml turbo.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 
 # Copy packages and backend app
 COPY packages/ ./packages/
 COPY apps/backend/ ./apps/backend/
 
 # Install dependencies
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # Build shared and backend
 RUN pnpm --filter "@nfe/shared" build
