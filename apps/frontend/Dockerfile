@@ -1,4 +1,9 @@
 FROM node:18-alpine AS base
+
+# Accept build arguments
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm install -g pnpm@10.30.3
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
