@@ -24,7 +24,9 @@ import { useEffect } from "react";
 
 export default function DashboardHome() {
   const [emailToVerify, setEmailToVerify] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [verificationResult, setVerificationResult] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
