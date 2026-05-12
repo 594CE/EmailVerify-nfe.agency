@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import { useAuthStore } from "../store/useAuthStore";
 
 const socket = io(
-  import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:4000",
+  import.meta.env.VITE_API_URL?.replace("/api", "") || "/",
   {
     autoConnect: false,
   },
