@@ -74,15 +74,12 @@ services:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
+      args:
+        VITE_API_URL: ${FRONTEND_VITE_API_URL:-/api}
     container_name: emailverify-frontend
-    ports:
-      - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - VITE_API_URL=http://localhost:4000/api
-    volumes:
-      - ./apps/frontend:/app/apps/frontend
-      - ./packages:/app/packages
+      - NODE_ENV=production
+      - VITE_API_URL=${FRONTEND_VITE_API_URL:-/api}
 
   nginx:
     image: nginx:alpine

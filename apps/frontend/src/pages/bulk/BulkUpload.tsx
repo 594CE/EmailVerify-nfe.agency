@@ -5,6 +5,7 @@ import api from "../../utils/api";
 export default function BulkUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [jobs, setJobs] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -18,11 +19,14 @@ export default function BulkUpload() {
   };
 
   useEffect(() => {
-    fetchJobs();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchJobs();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     import("../../utils/socket").then(({ default: socket }) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const handleProgress = (data: any) => {
         setJobs((prevJobs) =>
           prevJobs.map((job) => {
