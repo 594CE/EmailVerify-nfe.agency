@@ -6,7 +6,7 @@ COPY packages/ ./packages/
 COPY apps/frontend/ ./apps/frontend/
 RUN pnpm install
 RUN pnpm --filter "@nfe/shared" build
-RUN pnpm --filter "@nfe/frontend" build
+RUN pnpm --filter "frontend" build
 
 FROM nginx:alpine
 COPY --from=base /app/apps/frontend/dist /usr/share/nginx/html
