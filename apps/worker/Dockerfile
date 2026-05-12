@@ -1,0 +1,21 @@
+FROM node:18-alpine AS base
+RUN npm install -g pnpm@10.30.3
+WORKDIR /app
+COPY package.json pnpm-workspace.yaml turbo.json ./
+COPY packages/ ./packages/
+COPY apps/worker/ ./apps/worker/
+RUN pnpm install
+RUN pnpm --filter "@nfe/shared" build
+RUN pnpm --filter "@nfe/config" build
+RUN pnpm --filter "@nfe/database" build
+RUN pnpm --filter "@nfe/core" build
+RUN pnpm --filter "@nfe/worker" build
+RUN pnpm install --prod
+
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=base /app/node_modules ./node_modules
+COPY --from=base /app/packages ./packages
+COPY --from=base /app/apps/worker ./apps/worker
+ENV NODE_ENV=production
+CMD ["node", "apps/worker/dist/index.js"]

@@ -1,0 +1,30 @@
+{
+  "name": "@nfe/worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
+  },
+  "dependencies": {
+    "bullmq": "^5.7.8",
+    "csv-parser": "^3.2.1",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^16.4.5",
+    "fs-extra": "^11.3.5",
+    "ioredis": "^5.4.1",
+    "mongoose": "^8.3.4",
+    "pino": "^9.0.0",
+    "@nfe/config": "workspace:*",
+    "@nfe/database": "workspace:*",
+    "@nfe/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@nfe/shared": "workspace:*",
+    "@nfe/tsconfig": "workspace:*",
+    "@types/fs-extra": "^11.0.4",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  }
+}
