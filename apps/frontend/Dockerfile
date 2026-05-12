@@ -5,8 +5,10 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/ ./packages/
 COPY apps/frontend/ ./apps/frontend/
 RUN pnpm install
-ARG VITE_API_URL=/api
+
+ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+
 RUN pnpm --filter "@nfe/shared" build
 
 ARG VITE_API_URL
