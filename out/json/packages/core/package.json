@@ -1,0 +1,23 @@
+{
+  "name": "@nfe/core",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch",
+    "clean": "rm -rf dist",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@nfe/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.5",
+    "@nfe/tsconfig": "workspace:*",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.9",
+    "@types/jest": "^30.0.0"
+  }
+}

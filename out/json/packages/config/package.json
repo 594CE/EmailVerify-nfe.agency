@@ -1,0 +1,23 @@
+{
+  "name": "@nfe/config",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "ioredis": "^5.4.1",
+    "pino": "^9.0.0",
+    "pino-http": "^9.0.0",
+    "bullmq": "^5.76.6",
+    "stripe": "^22.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.5",
+    "@nfe/tsconfig": "workspace:*"
+  }
+}

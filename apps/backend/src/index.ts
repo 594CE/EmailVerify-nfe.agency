@@ -6,8 +6,8 @@ import cookieParser from "cookie-parser";
 import http from "http";
 import { randomUUID } from "crypto";
 
-import { httpLogger, logger } from "@nfe/config";
-import { connectDB } from "@nfe/database";
+import { httpLogger, logger, redisConnection } from "@nfe/config";
+import { connectDB, getConnection } from "@nfe/database";
 import { initWebSocket } from "./websockets";
 
 import authRoutes from "./routes/auth.routes";
@@ -48,8 +48,19 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(httpLogger);
 
-app.get("/health", (req: Request, res: Response) => {
-  res.status(200).json({ status: "ok" });
+app.get("/health", async (req: Request, res: Response) => {
+  try {
+    const dbState = getConnection().readyState;
+    const redisState = redisConnection.status;
+
+    if (dbState === 1 && redisState === 'ready') {
+      res.status(200).json({ status: "ok", db: "connected", redis: "connected" });
+    } else {
+      res.status(503).json({ status: "error", db: dbState, redis: redisState });
+    }
+  } catch (error) {
+    res.status(500).json({ status: "error", message: "Health check failed" });
+  }
 });
 
 app.use("/api/auth", authRoutes);
@@ -67,6 +78,11 @@ app.use(
   requireRole("admin"),
   serverAdapter.getRouter(),
 );
+
+// Serve uploads statically
+import path from "path";
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, "../../uploads");
+app.use("/uploads", express.static(UPLOAD_DIR));
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   logger.error({ err }, "Unhandled Error");
@@ -90,6 +106,30 @@ const startServer = async () => {
     logger.info(`Server running on port ${PORT}`);
   });
 };
+
+// Graceful shutdown handling
+const shutdown = async () => {
+  logger.info("Gracefully shutting down backend server...");
+  server.close(async () => {
+    logger.info("HTTP server closed.");
+    try {
+      await getConnection().close();
+      logger.info("MongoDB connection closed.");
+    } catch (err) {
+      logger.error({ err }, "Error closing MongoDB connection.");
+    }
+    try {
+      redisConnection.disconnect();
+      logger.info("Redis connection closed.");
+    } catch (err) {
+      logger.error({ err }, "Error closing Redis connection.");
+    }
+    process.exit(0);
+  });
+};
+
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
 if (require.main === module) {
   startServer();
