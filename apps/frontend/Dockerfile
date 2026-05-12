@@ -1,10 +1,19 @@
 FROM node:18-alpine AS base
+
+# Accept build arguments
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm install -g pnpm@10.30.3
 WORKDIR /app
 COPY package.json pnpm-workspace.yaml turbo.json ./
 COPY packages/ ./packages/
 COPY apps/frontend/ ./apps/frontend/
 RUN pnpm install
+
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN pnpm --filter "@nfe/shared" build
 RUN pnpm --filter "@nfe/frontend" build
 

@@ -35,6 +35,7 @@ This project is structured as a **Turborepo Monorepo** with strict package bound
 - pnpm v10+
 - MongoDB
 - Redis Server
+- Docker & Docker Compose (for production deployments)
 
 ## Setup & Running Locally
 
@@ -55,16 +56,24 @@ This project is structured as a **Turborepo Monorepo** with strict package bound
    pnpm dev
    ```
 
-_(Alternatively, you can run the full environment via `docker-compose up --build -d` which spins up MongoDB, Redis, Nginx, Frontend, Backend, and Workers)._
+_(Alternatively, you can run the full environment via `docker compose up --build -d` which spins up MongoDB, Redis, Nginx, Frontend, Backend, and Workers)._
 
-## Deploying
+## Deploying to Production (Docker Compose)
 
-This monorepo is Docker-ready. Look at the `Dockerfile`s in each `apps/*` directory. The Dockerfiles utilize Turborepo's filtering to prune and install only what's necessary per-app, significantly reducing image sizes.
+The monorepo contains production-ready Dockerfiles for the `frontend`, `backend`, and `worker` services. The `docker-compose.yml` file is configured with:
 
-For scaling, you simply increase the number of worker containers:
+- Healthchecks for MongoDB, Redis, Frontend, and Backend.
+- Restart policies to ensure automatic recovery (`restart: unless-stopped`).
+- Reverse proxy (Nginx) routing to frontend and backend services.
+
+1. Configure `.env` variables, making sure to set appropriate production values.
+2. Build and start the services:
+   ```bash
+   docker compose up -d --build
+   ```
+
+To scale up worker instances for high-throughput CSV verification:
 
 ```bash
-docker-compose up --scale worker=5 -d
+docker compose up -d --scale worker=5
 ```
-
-All workers coordinate lock-free utilizing BullMQ via Redis.
