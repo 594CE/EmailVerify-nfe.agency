@@ -23,48 +23,115 @@ This project is structured as a **Turborepo Monorepo** with strict package bound
 
 1. A user uploads a CSV in the frontend (`apps/frontend`).
 2. The `apps/backend` receives the file via Multer, initializes a `BulkJob` in `@nfe/database`, and adds a message to the `bulkVerificationQueue` (BullMQ).
-3. The `apps/worker` picks up the job, streaming the CSV locally to keep memory usage low.
+3. The `apps/worker` picks up the job, streaming the CSV locally and dividing it into 500-row chunks to keep memory usage low and distribute load safely.
 4. Each email goes through the `@nfe/core` Verification Engine.
 5. The worker updates the `BulkJob` progress in DB and simultaneously emits a `redisPublisher.publish('bulk-progress')` event.
 6. The `apps/backend` (which acts as a WebSocket server) listens to Redis pub/sub channels and relays the progress directly to the user's specific Socket.io room.
 7. The frontend updates its UI instantly.
 
-## Pre-Requisites
+## Local Installation & Setup
 
-- Node.js 18+
-- pnpm v10+
-- MongoDB
-- Redis Server
+If you want to run the project entirely on your local machine (without Docker), you'll need the following prerequisites installed:
 
-## Setup & Running Locally
+### 1. Local Prerequisites
 
-1. Install dependencies across the monorepo:
+- **Node.js (18+)**: It is highly recommended to use `nvm` (Node Version Manager) to install and manage your Node version.
+- **PNPM (v10+)**: Install via npm using `npm install -g pnpm`.
+- **MongoDB**: Have a local MongoDB server running on port 27017, or grab a free connection string from MongoDB Atlas.
+- **Redis**: Have a local Redis server running on port 6379.
+
+### 2. Initialization
+
+1. Clone the repository and install dependencies:
 
    ```bash
    pnpm install
    ```
 
-2. Copy the example environment variables:
+2. Copy the environment variables:
 
    ```bash
    cp .env.example .env
    ```
 
-3. Start all packages in parallel using Turborepo:
+   _(Update the `.env` values like `JWT_SECRET`, `STRIPE_SECRET_KEY`, and `MONGO_URI` if necessary)._
+
+3. Build the shared packages:
+
+   ```bash
+   pnpm run build
+   ```
+
+4. Start the development environment:
    ```bash
    pnpm dev
    ```
+   _This starts the frontend on `http://localhost:3000`, the backend on `http://localhost:4000`, and spins up the background workers._
 
-_(Alternatively, you can run the full environment via `docker-compose up --build -d` which spins up MongoDB, Redis, Nginx, Frontend, Backend, and Workers)._
+### 3. Creating Your First User
 
-## Deploying
-
-This monorepo is Docker-ready. Look at the `Dockerfile`s in each `apps/*` directory. The Dockerfiles utilize Turborepo's filtering to prune and install only what's necessary per-app, significantly reducing image sizes.
-
-For scaling, you simply increase the number of worker containers:
+Because the database starts empty, there is no web-facing registration page (to protect your SaaS). Create your first admin user by running the following `curl` command in a new terminal tab:
 
 ```bash
-docker-compose up --scale worker=5 -d
+curl -X POST http://localhost:4000/api/auth/register \
+-H "Content-Type: application/json" \
+-d '{"email": "admin@example.com", "password": "password123", "name": "Admin User", "role": "admin"}'
 ```
 
-All workers coordinate lock-free utilizing BullMQ via Redis.
+You can now log in to the frontend at `http://localhost:3000/login` with those credentials.
+
+## Cloud Deployment (AWS Lightsail / Docker)
+
+The platform is designed to be easily deployed to a Virtual Private Server (VPS) like AWS Lightsail or DigitalOcean using Docker Compose.
+
+### 1. VPS Requirements
+
+- **OS:** Ubuntu 22.04 LTS
+- **Hardware:** Minimum 2GB RAM / 2 vCPUs
+- **Crucial Requirement:** You **MUST** request AWS to lift the "EC2 Port 25 restriction" for your instance's Elastic IP. Without outbound Port 25 unblocked, the SMTP validation engine will permanently timeout when verifying emails.
+
+### 2. Deployment Steps
+
+1. SSH into your VPS. Update packages and install Docker:
+
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sudo sh get-docker.sh
+   sudo apt-get install docker-compose-plugin -y
+   sudo usermod -aG docker $USER
+   ```
+
+   _(Log out and back in for the group changes to take effect)._
+
+2. Clone your repository:
+
+   ```bash
+   git clone <your-repo-url> emailverify-saas
+   cd emailverify-saas
+   ```
+
+3. Setup environment variables:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Update `.env` with your real Stripe API keys and update `FRONTEND_URL` to match your real domain (e.g. `https://yourdomain.com`).
+
+4. Boot the containers:
+   ```bash
+   docker compose up -d --build
+   ```
+
+The `docker-compose.yml` file will automatically spin up MongoDB, Redis, the Nginx reverse proxy (listening on port 80), the Node backend, the Worker, and the Frontend.
+
+### 3. Scaling Workers
+
+If your queue processing starts to lag, you can horizontally scale the background workers instantly without shutting down the application:
+
+```bash
+docker compose up -d --scale worker=3
+```
+
+All workers coordinate securely and lock-free utilizing BullMQ over Redis.
