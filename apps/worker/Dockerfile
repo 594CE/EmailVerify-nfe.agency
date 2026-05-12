@@ -1,10 +1,10 @@
 FROM node:18-alpine AS base
 RUN npm install -g pnpm@10.30.3
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY package.json pnpm-workspace.yaml turbo.json ./
 COPY packages/ ./packages/
 COPY apps/worker/ ./apps/worker/
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 RUN pnpm --filter "@nfe/shared" build
 RUN pnpm --filter "@nfe/config" build
 RUN pnpm --filter "@nfe/database" build

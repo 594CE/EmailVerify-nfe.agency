@@ -1,9 +1,0 @@
-{
-  "extends": "@nfe/tsconfig/base.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
-  "references": [{ "path": "../config" }],
-  "include": ["src/**/*"]
-}

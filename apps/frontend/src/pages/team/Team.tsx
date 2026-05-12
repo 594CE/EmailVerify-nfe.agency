@@ -3,7 +3,6 @@ import { UserPlus, Settings, MoreVertical } from "lucide-react";
 import api from "../../utils/api";
 
 export default function Team() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   const [_team, setTeam] = useState<any>(null);
   const [inviteEmail, setInviteEmail] = useState("");
 

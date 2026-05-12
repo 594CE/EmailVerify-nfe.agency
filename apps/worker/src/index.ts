@@ -2,8 +2,9 @@ import { Worker, Job } from "bullmq";
 import fs from "fs";
 import csv from "csv-parser";
 import { createObjectCsvWriter } from "csv-writer";
+import Redis from "ioredis";
 
-import { logger, redisConnection, bulkVerificationQueue, createRedisClient } from "@nfe/config";
+import { logger, redisConnection, bulkVerificationQueue } from "@nfe/config";
 import { connectDB, BulkJob } from "@nfe/database";
 import { VerificationService } from "@nfe/core";
 
@@ -11,7 +12,10 @@ import { VerificationService } from "@nfe/core";
 import "@nfe/database";
 
 // Fallback logic to emit via redis if websocket isn't directly connected to the worker
-const redisPublisher = createRedisClient();
+const redisPublisher = new Redis({
+  host: process.env.REDIS_HOST || "localhost",
+  port: Number(process.env.REDIS_PORT) || 6379,
+});
 
 async function start() {
   await connectDB();
@@ -167,11 +171,7 @@ async function start() {
 
         if (isLastChunk) {
           bulkJob.status = "completed";
-          // We need a URL that the user can download. We are in the worker so we don't have the frontend URL easily.
-          // We assume /uploads is mounted, and the backend statically serves it at /uploads.
-          // Extract the filename from the resultsPath
-          const fileName = resultsPath.split('/').pop() || resultsPath;
-          bulkJob.resultsUrl = `/uploads/${fileName}`;
+          bulkJob.resultsUrl = resultsPath;
           await bulkJob.save();
 
           await redisPublisher.publish(

@@ -16,7 +16,6 @@ export default function Login() {
       const res = await api.post("/auth/login", { email, password });
       setAuth(res.data.user, res.data.token);
       navigate("/");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
     }

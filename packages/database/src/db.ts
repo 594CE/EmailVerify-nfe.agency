@@ -4,7 +4,7 @@ import { logger } from "@nfe/config";
 export const connectDB = async () => {
   try {
     const mongoUri =
-      process.env.MONGO_URI || "mongodb://127.0.0.1:27017/emailverify";
+      process.env.MONGO_URI || "mongodb://localhost:27017/emailverify";
     await mongoose.connect(mongoUri);
     logger.info("MongoDB connected successfully");
   } catch (error) {
@@ -12,5 +12,3 @@ export const connectDB = async () => {
     process.exit(1);
   }
 };
-
-export const getConnection = () => mongoose.connection;
