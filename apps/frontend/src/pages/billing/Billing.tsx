@@ -45,7 +45,7 @@ export default function Billing() {
       const res = await api.post("/billing/create-checkout-session", {
         planId,
       });
-      window.location.assign(res.data.url);
+      window.location.href = res.data.url;
     } catch (err) {
       console.error(err);
     } finally {

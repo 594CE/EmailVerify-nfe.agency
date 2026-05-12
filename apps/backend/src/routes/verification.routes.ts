@@ -10,10 +10,8 @@ import { authenticateJWT } from "../middlewares/auth";
 import { apiRateLimiter } from "../middlewares/rateLimiter";
 
 const router: Router = Router();
-
-const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads/";
 const upload = multer({
-  dest: UPLOAD_DIR,
+  dest: "uploads/",
   limits: { fileSize: 10 * 1024 * 1024 },
 }); // 10MB limit
 

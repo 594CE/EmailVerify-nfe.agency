@@ -1,7 +1,11 @@
+import Redis from "ioredis";
 import { getIO } from "../utils/socketInstance";
-import { logger, createRedisClient } from "@nfe/config";
+import { logger } from "@nfe/config";
 
-const redisSubscriber = createRedisClient();
+const redisSubscriber = new Redis({
+  host: process.env.REDIS_HOST || "localhost",
+  port: Number(process.env.REDIS_PORT) || 6379,
+});
 
 redisSubscriber.subscribe("bulk-progress", (err) => {
   if (err) {
